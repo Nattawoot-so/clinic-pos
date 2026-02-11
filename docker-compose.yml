@@ -1,0 +1,66 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: clinic
+      POSTGRES_PASSWORD: clinic_pass
+      POSTGRES_DB: clinicpos
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clinic"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ./src/backend/ClinicPOS.Api
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=clinicpos;Username=clinic;Password=clinic_pass"
+      Jwt__Key: "super-secret-key-at-least-32-chars-long-for-hmac!!"
+      Jwt__Issuer: "ClinicPOS"
+      RabbitMQ__Host: "rabbitmq"
+      ASPNETCORE_ENVIRONMENT: Development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:5000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
