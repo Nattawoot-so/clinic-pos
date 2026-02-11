@@ -2,11 +2,21 @@
 
 A multi-tenant, multi-branch Clinic POS system built with .NET 10, Next.js, PostgreSQL, Redis, and RabbitMQ.
 
+## Prerequisites
+
+- **Docker Desktop** (v4.x+) with Docker Compose v2
+- **Git**
+- Ports **3000**, **5000**, **5432**, **5672**, **6379**, **15672** must be available
+
 ## Quick Start
 
 ```bash
+git clone https://github.com/Nattawoot-so/clinic-pos.git
+cd clinic-pos
 docker compose up --build
 ```
+
+Wait until all 5 services are healthy (first build takes ~2-3 minutes). Database migrations and seed data are applied automatically on startup.
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000
@@ -131,9 +141,12 @@ See `.env.example` for all required environment variables. Docker Compose sets t
 ## Running Tests
 
 ```bash
-# From the project root
-cd src/backend/ClinicPOS.Tests
+# Option 1: If .NET 10 SDK is installed locally
+cd src/backend
 dotnet test
+
+# Option 2: Using Docker (no .NET SDK required)
+docker run --rm -v "$(pwd)/src/backend:/app" -w /app mcr.microsoft.com/dotnet/sdk:10.0 dotnet test
 ```
 
 ### Test Coverage
