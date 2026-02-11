@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getUserFromToken } from "@/lib/api";
 
 interface Patient {
   id: string;
@@ -28,6 +28,8 @@ export default function PatientsPage() {
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const user = getUserFromToken();
+  const canCreate = user?.role !== "Viewer";
 
   const loadPatients = useCallback(async () => {
     try {
@@ -76,69 +78,75 @@ export default function PatientsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-800">Patients</h1>
 
-      {/* Create Form */}
-      <form
-        onSubmit={handleCreate}
-        className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4"
-      >
-        <h2 className="text-lg font-semibold text-gray-700">
-          Create Patient
-        </h2>
-
-        {error && (
-          <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{error}</p>
-        )}
-        {success && (
-          <p className="text-green-600 text-sm bg-green-50 p-2 rounded">
-            {success}
-          </p>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            placeholder="First Name *"
-            value={form.firstName}
-            onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-            className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-          <input
-            placeholder="Last Name *"
-            value={form.lastName}
-            onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-            className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-          <input
-            placeholder="Phone Number *"
-            value={form.phoneNumber}
-            onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-            className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-          <select
-            value={form.primaryBranchId}
-            onChange={(e) =>
-              setForm({ ...form, primaryBranchId: e.target.value })
-            }
-            className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">No Primary Branch</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700"
+      {/* Create Form — hidden for Viewer */}
+      {canCreate ? (
+        <form
+          onSubmit={handleCreate}
+          className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4"
         >
-          Create Patient
-        </button>
-      </form>
+          <h2 className="text-lg font-semibold text-gray-700">
+            Create Patient
+          </h2>
+
+          {error && (
+            <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{error}</p>
+          )}
+          {success && (
+            <p className="text-green-600 text-sm bg-green-50 p-2 rounded">
+              {success}
+            </p>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              placeholder="First Name *"
+              value={form.firstName}
+              onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+              className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            <input
+              placeholder="Last Name *"
+              value={form.lastName}
+              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+              className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            <input
+              placeholder="Phone Number *"
+              value={form.phoneNumber}
+              onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+              className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            <select
+              value={form.primaryBranchId}
+              onChange={(e) =>
+                setForm({ ...form, primaryBranchId: e.target.value })
+              }
+              className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">No Primary Branch</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700"
+          >
+            Create Patient
+          </button>
+        </form>
+      ) : (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-700">
+          You are logged in as <strong>Viewer</strong>. You can view data but cannot create patients.
+        </div>
+      )}
 
       {/* Filter */}
       <div className="flex items-center gap-3">

@@ -20,7 +20,7 @@ export default function LoginPage() {
         body: JSON.stringify({ username, password }),
       });
       localStorage.setItem("token", token);
-      router.push("/patients");
+      window.location.href = "/patients";
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

@@ -29,6 +29,7 @@ public static class AuthEndpoints
                 new Claim("user_id", user.Id.ToString()),
                 new Claim("tenant_id", user.TenantId.ToString()),
                 new Claim("role", user.Role),
+                new Claim("username", user.Username),
                 new Claim(ClaimTypes.Role, user.Role)
             };
 
